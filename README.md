@@ -1,4 +1,4 @@
-# EasyRTMP_RTSP
+# EasyPusher_RTSP
 基于Android手机、设备拉取远程RTSP流到本地，再以RTSP协议推送到标准的RTMP服务器（例如EasyDarwin流媒体服务器等等）。其他平台R拉取RTSP转推RTSP可以参考https://github.com/EasyDarwin/EasyPusher和https://github.com/EasyDSS/EasyRTSPClient 。
 
 # App下载

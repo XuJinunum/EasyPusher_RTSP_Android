@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -942,7 +943,7 @@ public class EasyRTSPClient implements RTSPClient.RTSPSourceCallBack {
             }
 
 //            boolean firstFrame = mNewestStample == 0;
-            frameInfo.stamp = frameInfo.timestamp_sec*1000+frameInfo.timestamp_usec;
+            frameInfo.stamp = frameInfo.timestamp_sec*1000+frameInfo.timestamp_usec/1000;
             frameInfo.audio = false;
             if (mWaitingKeyFrame) {
 
@@ -995,7 +996,9 @@ public class EasyRTSPClient implements RTSPClient.RTSPSourceCallBack {
                     }
                 }
 
-                mPusher.initPush(mServerIP, mServerPort, mStreamName, mContext, mRtmpCallBack);
+                mPusher.initPush(mContext, mRtmpCallBack);
+                mPusher.setMediaInfo(mMediaInfo.videoCodec, mMediaInfo.fps, mMediaInfo.audioCodec, mMediaInfo.channel, mMediaInfo.sample, mMediaInfo.bitPerSample);
+                mPusher.start(mServerIP, mServerPort, mStreamName);
             }
 //            Log.d(TAG, String.format("queue size :%d", mQueue.size()));
 //            try {
@@ -1008,36 +1011,40 @@ public class EasyRTSPClient implements RTSPClient.RTSPSourceCallBack {
             }
         } else if (_frameType == RTSPClient.EASY_SDK_AUDIO_FRAME_FLAG) {
             frameInfo.audio = true;
-            frameInfo.stamp = frameInfo.timestamp_sec*1000+frameInfo.timestamp_usec;
+            frameInfo.stamp = frameInfo.timestamp_sec*1000+frameInfo.timestamp_usec/1000;
 
-            if(frameInfo.codec == EASY_SDK_AUDIO_CODEC_AAC){
-                if(mPusher != null) {
-                    mPusher.push(frameInfo.buffer, frameInfo.offset, frameInfo.length, frameInfo.stamp, Pusher.FrameType.FRAME_TYPE_AUDIO);
-                }
-            } else if(frameInfo.codec == EASY_SDK_AUDIO_CODEC_G711A ||
-                    frameInfo.codec == EASY_SDK_AUDIO_CODEC_G711U ||
-                    frameInfo.codec == EASY_SDK_AUDIO_CODEC_G726){
-                synchronized (this) {
-                    if (mObject == null) {
-                        startRecord(null);
-                    }
-                }
-
-                try {
-                    mQueue.put(frameInfo);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                ResultReceiver rr = mRR;
-                if (!mNotSupportedAudioCB && rr != null) {
-                    mNotSupportedAudioCB = true;
-                    if (rr != null) {
-                        rr.send(RESULT_UNSUPPORTED_AUDIO, null);
-                    }
-                }
-                return;
+            if(mPusher != null) {
+                mPusher.push(frameInfo.buffer, frameInfo.offset, frameInfo.length, frameInfo.stamp, Pusher.FrameType.FRAME_TYPE_AUDIO);
             }
+
+//            if(frameInfo.codec == EASY_SDK_AUDIO_CODEC_AAC){
+//                if(mPusher != null) {
+//                    mPusher.push(frameInfo.buffer, frameInfo.offset, frameInfo.length, frameInfo.stamp, Pusher.FrameType.FRAME_TYPE_AUDIO);
+//                }
+//            } else if(frameInfo.codec == EASY_SDK_AUDIO_CODEC_G711A ||
+//                    frameInfo.codec == EASY_SDK_AUDIO_CODEC_G711U ||
+//                    frameInfo.codec == EASY_SDK_AUDIO_CODEC_G726){
+//                synchronized (this) {
+//                    if (mObject == null) {
+//                        startRecord(null);
+//                    }
+//                }
+//
+//                try {
+//                    mQueue.put(frameInfo);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            } else {
+//                ResultReceiver rr = mRR;
+//                if (!mNotSupportedAudioCB && rr != null) {
+//                    mNotSupportedAudioCB = true;
+//                    if (rr != null) {
+//                        rr.send(RESULT_UNSUPPORTED_AUDIO, null);
+//                    }
+//                }
+//                return;
+//            }
         } else if (_frameType == 0) {
             // time out...
             if (!mTimeout) {

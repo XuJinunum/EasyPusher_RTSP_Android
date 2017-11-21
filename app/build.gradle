@@ -7,8 +7,8 @@ android {
         applicationId "org.easydarwin.easypusher_rtsp"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0.17.1104"
+        versionCode 2
+        versionName "1.0.17.1116"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
